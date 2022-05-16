@@ -1,0 +1,172 @@
+body {
+  font-family: Helvetica;
+  margin: 0;
+  display: flex;
+  align-items: stretch;
+  height: 100vh;
+}
+form.card-action {
+  display: none;
+}
+#sidebar {
+  width: min(25%, 250px);
+  background-color: #006266;
+  color: white;
+  overflow: scroll;
+  display: flex;
+  flex-direction: column-reverse;
+}
+#board {
+  background-color: #A3CB38;
+  flex: 1;
+  position: relative;
+}
+.player {
+  position: absolute;
+}
+.player-name {
+  text-align: center;
+}
+.opponent:nth-child(1) {
+  top: 50%;
+  transform: translate(-50%,0) rotate(-90deg) translate(0,50%) translate(0,20px);
+}
+.opponent:nth-child(2) {
+  top: 20px;
+  left: 50%;
+  transform: translate(-50%,0);
+}
+.opponent:nth-child(3) {
+  top: 50%;
+  right:0;
+  transform: translate(50%,0) rotate(90deg) translate(0,50%) translate(0,20px);
+}
+.player.current {
+  bottom: 20px;
+  left: 50%;
+  transform: translate(-50%,0);
+}
+.hand {
+  display: inline-block;
+}
+.card {
+  font-family: courier;
+  display: inline-block;
+  width: 50px;
+  height: 80px;
+  border: 2px solid black;
+  border-radius: 10px;
+  color: white;
+  text-align: center;
+  font-size: 60px;
+  margin-right: 3px;
+  vertical-align: top;
+}
+.stacked .card {
+  margin: 0 -35px 0 0;
+}
+.stacked .card:first-child {
+  margin-left: 0;
+}
+.card.hidden {
+  background-color: #1289A7;
+}
+.card.playable {
+  cursor: pointer;
+  border: 2px solid white;
+}
+.card.playable:hover {
+  background-color: #12CBC4;
+}
+.card-red {
+  background-color: #EA2027;
+}
+.card-red.playable:hover {
+  background-color: #F79F1F;
+}
+.card-yellow {
+  background-color: #FFC312;
+}
+.card-yellow.playable:hover {
+  background-color: #FFE599;
+}
+.card-green {
+  background-color: #009432;
+}
+.card-green.playable:hover {
+  background-color: #C4E538;
+}
+.card-blue {
+  background-color: #0652DD;
+}
+.card-blue.playable:hover {
+  background-color: #12CBC4;
+}
+.card-wild {
+  background-color: black;
+}
+.card-wild.playable:hover {
+  background-color: "grey";
+}
+.card p {
+  margin: 0;
+}
+#draw-pile {
+  margin-right: 3px;
+}
+#board-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  display: flex;
+}
+.action-button {
+  position: relative;
+  top: 70%;
+  width: 400px;
+  text-align: center;
+  margin: 0 auto;
+}
+.card .swatches {
+  display: none;
+}
+.card.card-wild:hover p {
+  display: none;
+}
+.card:hover .swatches {
+  display: flex;
+  flex-wrap: wrap;
+}
+.swatch {
+  height: 20px;
+  width: 20px;
+  border: 2px solid white;
+  border-radius: 50%;
+}
+.swatch-red {
+  background-color: #EA2027;
+}
+.swatch-red:hover {
+  background-color: #F79F1F;
+}
+.swatch-yellow {
+  background-color: #FFC312;
+}
+.swatch-yellow:hover {
+  background-color: #FFE599;
+}
+.swatch-green {
+  background-color: #009432;
+}
+.swatch-green:hover {
+  background-color: #C4E538;
+}
+.swatch-blue {
+  background-color: #0652DD;
+}
+.swatch-blue:hover {
+  background-color: #12CBC4;
+}
+
+

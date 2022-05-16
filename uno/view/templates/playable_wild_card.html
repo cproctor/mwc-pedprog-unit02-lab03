@@ -1,0 +1,30 @@
+<form class="card-action" id="play-card-{{i}}-red" action="/" method="POST">
+  <input type="hidden" name="action" value="play">
+  <input type="hidden" name="card_index" value="{{i}}">
+  <input type="hidden" name="color" value="RED">
+</form>
+<form class="card-action" id="play-card-{{i}}-yellow" action="/" method="POST">
+  <input type="hidden" name="action" value="play">
+  <input type="hidden" name="card_index" value="{{i}}">
+  <input type="hidden" name="color" value="YELLOW">
+</form>
+<form class="card-action" id="play-card-{{i}}-green" action="/" method="POST">
+  <input type="hidden" name="action" value="play">
+  <input type="hidden" name="card_index" value="{{i}}">
+  <input type="hidden" name="color" value="GREEN">
+</form>
+<form class="card-action" id="play-card-{{i}}-blue" action="/" method="POST">
+  <input type="hidden" name="action" value="play">
+  <input type="hidden" name="card_index" value="{{i}}">
+  <input type="hidden" name="color" value="BLUE">
+</form>
+<div class="card card-{{card.color.lower()}}">
+  <p>{{card.rank}}</p>
+  <div class="swatches">
+    <div class="swatch swatch-red" onclick="document.forms['play-card-{{i}}-red'].submit()"></div>
+    <div class="swatch swatch-yellow" onclick="document.forms['play-card-{{i}}-yellow'].submit()"></div>
+    <div class="swatch swatch-green" onclick="document.forms['play-card-{{i}}-green'].submit()"></div>
+    <div class="swatch swatch-blue" onclick="document.forms['play-card-{{i}}-blue'].submit()"></div>
+  </div>
+</div>
+

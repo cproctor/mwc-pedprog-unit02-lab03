@@ -1,0 +1,72 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="/static/style.css">
+  </head>
+  <body>
+    <div id="sidebar">
+      <ul>
+        {% for message in messages %}
+          <li>{{message}}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div id="board">
+      {% for opponent in opponents %}
+      <div class="player opponent">
+          <div class="hand stacked">
+              {% for i in range(opponent.hand) %}
+                  <div class="card hidden"></div>
+              {% endfor %}
+          </div>
+          <h2 class="player-name">{{opponent.name}}</h2>
+      </div>
+      {% endfor %}
+      <div class="player current">
+          <h2 class="player-name">{{current_player.name}}</h2>
+          {%- for card in current_player.hand -%}
+            {%- if card in playable_cards -%}
+              {%- with i=loop.index0 -%}
+                {%- if card.is_wild() -%}
+                  {% include 'playable_wild_card.html' %}
+                {%- else -%}
+                  {%- include 'playable_card.html' -%}
+                {%- endif -%}
+              {% endwith %}
+            {%- else -%}
+              <div class="card card-{{card.color.lower()}}"><p>{{card.rank}}</p></div>
+            {%- endif -%}
+          {%- endfor %}
+          <div id="non-card-actions">
+          </div>
+      </div>
+      <div id="board-center">
+        {%- if can_draw -%}
+          <form class="card-action" id="draw-card" action="/" method="POST">
+            <input type="hidden" name="action" value="draw">
+          </form>
+          <div id="draw-pile" class="card hidden playable" onclick="document.forms['draw-card'].submit()"></div>
+        {%- else -%}
+          <div id="draw-pile" class="card hidden"></div>
+        {%- endif -%}
+        <div class="stacked">
+          {% for card in play_pile[-4:] %}
+            <div class="card card-{{card.color.lower()}}"><p>{{card.rank}}</p></div>
+          {% endfor %}
+        </div>
+      </div>
+      {%- if winner -%}
+        <form class="action-button" action="/" method="POST">
+          <h1>Congratulations to {{winner.name}}!</h1>
+          <input type="submit" name="restart" value="Play again">
+        </form>
+      {%- endif -%}
+      {% if can_pass %}
+        <form class="action-button" action="/" method="POST">
+          <input type="hidden" name="action" value="pass">
+          <input type="submit" value="Pass">
+        </form>
+      {% endif %}
+    </div>
+    <script>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+<form class="card-action" id="play-card-{{i}}" action="/" method="POST">
+  <input type="hidden" name="action" value="play">
+  <input type="hidden" name="card_index" value="{{i}}">
+</form>
+<div class="card playable card-{{card.color.lower()}}" onclick="document.forms['play-card-{{i}}'].submit()">
+  <p>{{card.rank}}</p>
+</div>
