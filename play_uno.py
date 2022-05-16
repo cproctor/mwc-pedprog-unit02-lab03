@@ -5,13 +5,11 @@ from uno.player.human import HumanUnoPlayer
 from uno.player.computer import RandomUnoPlayer
 
 players = [
-    #HumanUnoPlayer(input("What is your name? ")),
-    HumanUnoPlayer("Chris"),
+    HumanUnoPlayer(input("What is your name? ")),
     RandomUnoPlayer("Bot 1"),
     RandomUnoPlayer("Bot 2"),
     RandomUnoPlayer("Bot 3"),
 ]
 game = UnoGame(players, "basic")
-#view = TerminalUnoView()
-view = WebUnoView()
+view = TerminalUnoView()
 view.play(game)
