@@ -1,5 +1,8 @@
 from flask import Flask, request, render_template
-
+from threading import Thread
+import webbrowser
+import time
+import sys
 
 class WebUnoView:
     """A view of the Uno card game for a web browser.
@@ -15,7 +18,13 @@ class WebUnoView:
         "Plays a game"
         self.game = game
         self.play_automated_turns()
-        self.app.run()
+        Thread(target=self.app.run).start()
+        webbrowser.open_new("http://127.0.0.1:5000")
+        while True:
+            try:
+                time.sleep(1)
+            except KeyboardInterrupt:
+                sys.exit(0)
 
     def play_automated_turns(self):
         "Plays all automated turns."
