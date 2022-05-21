@@ -34,8 +34,7 @@ players = [
 ]
 game = UnoGame(players, deck_name=args.deck)
 
-
 for epoch in range(10): 
     player.train_epoch(game)
-print(player.training_history)
+    print(player.training_history)
 
