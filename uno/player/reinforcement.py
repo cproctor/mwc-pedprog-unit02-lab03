@@ -2,33 +2,33 @@ import yaml
 from tqdm import trange
 from random import random, choice
 from pathlib import Path
+from tabulate import tabulate
+
+yaml.Dumper.ignore_aliases = lambda *args : True
 
 class ReinforcementLearningUnoPlayer:
     """A player who learns using reinforcement learning.
 
-    Q-learning Uno:
-
-     - Start a game.
-     - For each trial:
-       - Choose an action. With some probability ε, choose a random
-         action. Otherwise, choose the action for which Q(s, a) is highest.
-       - Estimate the value of Q(s, a). 
-       - Take the action. Then 
+    Here, we use the TD(memory_factor) algorithm.
 
     """
-    samples_per_epoch = 100000
-    chance_of_random_action = 0.3
-    learning_rate = 0.99
+    experiences_per_epoch = 100000
+    chance_of_random_action = 0.2
+    learning_rate = 0.9
+    learning_rate_decay = 0.9
+    memory_factor = 0.8
 
-    def __init__(self, name, training_file=None, load_params=False):
+    def __init__(self, name, training_file=None, load_params=True):
         self.name = name
         self.is_automated = True
+        self.training_file = training_file
+        self.reset_trace()
         if training_file and Path(training_file).exists():
-            training_data = yaml.safe_load(training_file)
+            training_data = yaml.safe_load(Path(training_file).read_text())
             self.load_training_data(training_data, load_params=load_params)
         else:
             feature_names = self.get_feature_names()
-            self.weights = {feature: 0 for feature in feature_names}
+            self.weights = {feature: 1/len(feature_names) for feature in feature_names}
             self.training_history = []
 
     def get_feature_names(self):
@@ -54,27 +54,42 @@ class ReinforcementLearningUnoPlayer:
     def train_epoch(self, game, test_samples=1000):
         "Runs one epoch of training."
         epoch_num = len(self.training_history)
-        print(f"TRAINING EPOCH #{epoch_num} WITH {self.samples_per_epoch} SAMPLES")
-        for sample in trange(self.samples_per_epoch):
-            self.train_sample(game)
-        print("TESTING")
+        for sample in trange(self.experiences_per_epoch, desc="TRAIN", leave=False):
+            self.train_sarsa_experience(game)
         test_wins = self.test(game, test_samples)
         win_ratio = test_wins / test_samples
-        print(f"WIN RATIO: {win_ratio}")
+        params = {
+            'epoch': epoch_num,
+            'win_ratio': win_ratio, 
+            'learning_rate': self.learning_rate,
+        }
+        reportable = {k: [v] for k, v in (params | self.weights).items()}
+        print(tabulate(reportable, headers="keys"))
         self.training_history.append({
             'weights': self.weights, 
-            'test_results': (test_wins, test_samples),
+            'test_results': test_wins / test_samples,
             'params': {
-                'samples_per_epoch': self.samples_per_epoch,
+                'experiences_per_epoch': self.experiences_per_epoch,
                 'learning_rate': self.learning_rate,
+                'learning_rate_decay': self.learning_rate_decay,
                 'chance_of_random_action': self.chance_of_random_action,
+                'memory_factor': self.memory_factor,
             }
         })
+        if self.training_file:
+            self.save_training_data()
+        self.learning_rate = self.learning_rate * self.learning_rate_decay
 
-    def train_sample(self, game):
-        """Runs a single training sample, updating weights.
+    def train_sarsa_experience(self, game):
+        """Conducts a single training experience and learns from the results.
+        The training experience is called SARSA because it involves 
+        a State, an Action, a Reward, another State, and another Action. 
+        Basically, we compare the quality we predicted for the initial (state, action)
+        with the observed reward plus the predicted quality for the result
+        (state, action). After a single step, how has our perception of quality 
+        changed? We update the feature weights accordingly.
         """
-        self.ensure_game_is_ready(game)
+        self.prepare_game(game)
         state = game.get_state()
         actions = game.get_actions()
         action = self.choose_action(state, actions)
@@ -82,18 +97,19 @@ class ReinforcementLearningUnoPlayer:
         result_state = game.get_state()
         reward = game.get_reward(result_state)
         if game.is_over():
-            observed_quality = reward
+            result_quality = reward
         else:
             next_actions = game.get_actions()
             next_action = self.choose_action(result_state, next_actions)
             next_quality = self.quality(result_state, next_action)
-            observed_quality = reward + next_quality
-        quality_diff = predicted_quality - observed_quality
+            result_quality = reward + next_quality
+        quality_diff = result_quality - predicted_quality
 
-        for feature in self.get_feature_names():
-            feature_function = getattr(self, feature)
-            feature_value = feature_function(state, action)
-            self.weights[feature] += self.learning_rate * quality_diff * feature_value
+        for f in self.get_feature_names():
+            f_function = getattr(self, f)
+            f_value = f_function(state, action)
+            self.trace[f] = self.trace[f] * self.memory_factor + f_value
+            self.weights[f] += self.learning_rate * quality_diff * self.trace[f]
         self.normalize_weights()
 
     def choose_action(self, state, actions):
@@ -114,7 +130,7 @@ class ReinforcementLearningUnoPlayer:
     def test(self, game, trials=1000):
         "Runs a test"
         wins = 0
-        for i in trange(trials):
+        for i in trange(trials, desc="TEST", leave=False):
             game.reset()
             while not game.is_over():
                 state = game.get_state()
@@ -125,9 +141,9 @@ class ReinforcementLearningUnoPlayer:
                 wins += 1
         return wins
 
-    def save_training_data(self, filename):
+    def save_training_data(self):
         "Saves the learned weights, as well as information about the training history."
-        with open(filename, 'w') as file_handler:
+        with open(self.training_file, 'w') as file_handler:
             file_handler.write(yaml.dump(self.training_history))
 
     def load_training_data(self, training_data, load_params=False):
@@ -136,7 +152,7 @@ class ReinforcementLearningUnoPlayer:
         self.training_history = training_data
         self.weights = self.training_history[-1]['weights']
         if load_params:
-            for key, value in self.training_history[-1]['params']:
+            for key, value in self.training_history[-1]['params'].items():
                 setattr(self, key, value)
 
     def validate_training_data(self, training_data):
@@ -159,7 +175,7 @@ class ReinforcementLearningUnoPlayer:
             for feature in self.get_feature_names():
                 self.weights[feature] = self.weights[feature] / weight_sum
 
-    def ensure_game_is_ready(self, game):
+    def prepare_game(self, game):
         """Makes sure that the game is ready for this player to play. 
         If not, lets other players play until it's this player's turn. 
         If the game ends, resets the game.
@@ -168,8 +184,13 @@ class ReinforcementLearningUnoPlayer:
             game.current_player().choose_action(game.get_state(), game.get_actions())
         if game.is_over():
             game.reset()
-        while game.current_player() != self:
-            game.current_player().choose_action(game.get_state(), game.get_actions())
+            self.reset_trace()
+            while game.current_player() != self:
+                game.current_player().choose_action(game.get_state(), game.get_actions())
+
+    def reset_trace(self):
+        "Sets the trace to zero."
+        self.trace = {feature: 0 for feature in self.get_feature_names()}
 
     def action_message(self, action):
         if action["action"] == "pass":

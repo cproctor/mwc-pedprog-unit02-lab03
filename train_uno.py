@@ -13,7 +13,7 @@ from uno.player.computer import RandomUnoPlayer
 
 parser = ArgumentParser()
 parser.add_argument("player")
-parser.add_argument('-e', '--epochs', type=int, default=10)
+parser.add_argument('-e', '--epochs', type=int, default=20)
 parser.add_argument('-f', '--training-file')
 parser.add_argument('-d', '--deck', default='standard')
 args = parser.parse_args()
@@ -33,9 +33,5 @@ players = [
     RandomUnoPlayer("Opponent 3"),
 ]
 game = UnoGame(players, deck_name=args.deck)
-
-
-for epoch in range(10): 
+for epoch in range(args.epochs): 
     player.train_epoch(game)
-print(player.training_history)
-
