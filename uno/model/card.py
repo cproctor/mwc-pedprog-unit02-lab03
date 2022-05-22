@@ -52,11 +52,23 @@ class Card:
 
     def activate(self, game):
         "Activates the card's special ability by making a change to the game."
+        player = game.current_player()
         if self.rank == "S":
-            player = game.current_player()
             game.messages.append(f"{player.name}'s turn is skipped!")
             game.end_of_turn()
-
+        elif self.rank == "D":
+            for card in range(2):
+                game.current_hand().append(game.draw_card())
+            game.end_of_turn()
+            game.messages.append(f"{player.name} draws two cards and loses their turn!")
+        elif self.rank == "R":
+            game.clockwise = not game.clockwise
+            game.messages.append(f"The order of play reverses.")
+        elif self.rank == "X":
+            for card in range(4):
+                game.current_hand().append(game.draw_card())
+            game.end_of_turn()
+            game.messages.append(f"{player.name} draws four cards and loses their turn!")
 
 
 
